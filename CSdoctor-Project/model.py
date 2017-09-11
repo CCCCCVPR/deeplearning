@@ -40,7 +40,6 @@ model.add(TimeDistributed(Flatten()))
 model.add(TimeDistributed(Dense(128)))
 model.add(LSTM(50, return_sequences=False))
 model.add(Dense(output_shape))
-model.add(Activation('softmax'))
 
 model.summary()
 
