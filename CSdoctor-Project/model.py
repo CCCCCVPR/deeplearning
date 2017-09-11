@@ -12,7 +12,6 @@ from keras.utils import np_utils
 
 batch_size = 500
 epochs = 64
-nb_classes = 2
 
 # Data parsing
 data = pd.read_csv('E://capstone/data.csv', header = None)
