@@ -53,7 +53,7 @@ model.add(TimeDistributed(Flatten()))
 # Attention
 attention_model = Sequential()
 attention_model.add(model)
-attention_model.add(TimeDistributed(Dense(256, activation='softmax')))
+attention_model.add((Activation('softmax', name='Attention_softmax')))
 final_model = Sequential()
 final_model.add(Merge([model, attention_model], mode='mul'))
 
