@@ -20,8 +20,19 @@ epochs = 64
 
 
 
+# Data - 109GB (1035 csv files)
+dir = 'E://csv_data/data'
+data = pd.read_csv(dir + '/part10_window50.csv', header = None)
+for i in range (2, 100) :
+    print (str(i*10) + " Start")
+    data2 = pd.read_csv(dir + '/part'+str(i*10)+'_window50.csv', header = None)
+    data = data.append(data2, ignore_index=True)    
+    print (str(i*10) + " END")
+data2 = pd.read_csv(dir + '/part1035_window50.csv', header = None)
+data = data.append(data2, ignore_index=True)    
+print ("Data prepared")
+
 # Data parsing
-data = pd.read_csv('E://capstone/data.csv', header = None)
 data = data.reindex(np.random.permutation(data.index))
 train, test = train_test_split(data, train_size=0.9, random_state=0)
 x_train, x_test = train.iloc[:,1:].values, test.iloc[:,1:].values
