@@ -3,8 +3,9 @@ import os
 from sklearn.cross_validation import train_test_split
 from PIL import Image
 from keras.models import Sequential
+from keras.layers import Activation, Merge, Conv2D
 from keras.layers.core import Dense, Dropout, Flatten
-from keras.optimizers import RMSprop
+from keras.optimizers import Adadelta
 from keras import backend as K
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 
@@ -91,29 +92,40 @@ else:
     x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
     input_shape = (img_rows, img_cols, 1)
 
+    
+    
 model = Sequential()
-model.add(Convolution2D(16, 1, 1, activation='relu', input_shape=input_shape))
-model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(16, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1), input_shape=input_shape))
 
-model.add(Convolution2D(32, 1, 1, activation='relu'))
-model.add(Convolution2D(64, 1, 1, activation='relu'))
-model.add(MaxPooling2D((2, 2)))
+attention_model = Sequential()
+attention_model.add(model)
+attention_model.add((Activation('softmax', name='Attention_softmax')))
 
-model.add(Convolution2D(64, 1, 1, activation='relu'))
-model.add(MaxPooling2D((2, 2)))
+final_model = Sequential()
+final_model.add(Merge([model, attention_model], mode='mul'))
 
-model.add(Convolution2D(256, 1, 1, activation='relu'))
-model.add(MaxPooling2D((2, 2)))
+final_model.add(MaxPooling2D((2, 2), padding='valid'))
+
+final_model.add(Conv2D(32, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1)))
+final_model.add(Conv2D(64, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1)))
+final_model.add(MaxPooling2D((2, 2), padding='valid'))
+
+final_model.add(Conv2D(64, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1)))
+final_model.add(MaxPooling2D((2, 2), padding='valid'))
+
+final_model.add(Conv2D(256, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1)))
+final_model.add(MaxPooling2D((2, 2), padding='valid'))
 
 
-model.add(Flatten())
-model.add(Dropout(0.5))
-model.add(Dense(num_classes, activation='softmax'))
+final_model.add(Flatten())
+final_model.add(Dropout(0.5))
+final_model.add(Dense(num_classes, activation='softmax'))
 
-model.summary()
+final_model.summary()
 
+adadelta = Adadelta(lr=1.0, rho=0.95, epsilon=1e-08, decay=0.01)
 model.compile(loss='categorical_crossentropy',
-              optimizer=RMSprop(),
+              optimizer=adadelta,
               metrics=['accuracy'])
 
 history = model.fit(x_train, y_train,
