@@ -96,32 +96,24 @@ else:
     
 model = Sequential()
 model.add(Conv2D(16, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1), input_shape=input_shape))
+model.add(MaxPooling2D((2, 2), padding='valid'))
 
-attention_model = Sequential()
-attention_model.add(model)
-attention_model.add((Activation('softmax', name='Attention_softmax')))
+model.add(Conv2D(32, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1)))
+model.add(Conv2D(64, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1)))
+model.add(MaxPooling2D((2, 2), padding='valid'))
 
-final_model = Sequential()
-final_model.add(Merge([model, attention_model], mode='mul'))
+model.add(Conv2D(64, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1)))
+model.add(MaxPooling2D((2, 2), padding='valid'))
 
-final_model.add(MaxPooling2D((2, 2), padding='valid'))
-
-final_model.add(Conv2D(32, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1)))
-final_model.add(Conv2D(64, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1)))
-final_model.add(MaxPooling2D((2, 2), padding='valid'))
-
-final_model.add(Conv2D(64, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1)))
-final_model.add(MaxPooling2D((2, 2), padding='valid'))
-
-final_model.add(Conv2D(256, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1)))
-final_model.add(MaxPooling2D((2, 2), padding='valid'))
+model.add(Conv2D(256, kernel_size=(4, 4), activation='relu', padding='same', strides=(1,1)))
+model.add(MaxPooling2D((2, 2), padding='valid'))
 
 
-final_model.add(Flatten())
-final_model.add(Dropout(0.5))
-final_model.add(Dense(num_classes, activation='softmax'))
+model.add(Flatten())
+model.add(Dropout(0.5))
+model.add(Dense(num_classes, activation='softmax'))
 
-final_model.summary()
+model.summary()
 
 adadelta = Adadelta(lr=1.0, rho=0.95, epsilon=1e-08, decay=0.01)
 model.compile(loss='categorical_crossentropy',
