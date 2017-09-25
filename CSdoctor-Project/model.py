@@ -19,27 +19,23 @@ batch_size = 500
 epochs = 64
 
 
+# Training Data
+def trainGenerator():
+    for data in pd.read_csv('E://csv_data/ex/train.csv', chunksize=100):
+        x_train = data.iloc[:,1:].values
+        y_train = np_utils.to_categorical(data.iloc[:,0].values)        
+        yield (x_train, y_train)
 
-# Data - 109GB (1035 csv files)
-dir = 'E://csv_data/data'
-data = pd.read_csv(dir + '/part10_window50.csv', header = None)
-for i in range (2, 100) :
-    print (str(i*10) + " Start")
-    data2 = pd.read_csv(dir + '/part'+str(i*10)+'_window50.csv', header = None)
-    data = data.append(data2, ignore_index=True)    
-    print (str(i*10) + " END")
-data2 = pd.read_csv(dir + '/part1035_window50.csv', header = None)
-data = data.append(data2, ignore_index=True)    
-print ("Data prepared")
+        
+# Test Data        
+def testGenerator():
+    for data in pd.read_csv('E://csv_data/ex/test.csv', chunksize=100):
+        x_test = data.iloc[:,1:].values
+        y_test = np_utils.to_categorical(data.iloc[:,0].values)        
+        yield (x_test, y_test)
 
-# Data parsing
-data = data.reindex(np.random.permutation(data.index))
-train, test = train_test_split(data, train_size=0.9, random_state=0)
-x_train, x_test = train.iloc[:,1:].values, test.iloc[:,1:].values
-y_train, y_test = np_utils.to_categorical(train.iloc[:,0].values), np_utils.to_categorical(test.iloc[:,0].values)
-
-
-
+        
+        
 # input_shape = (none, 50000)
 input_shape = (x_train.shape[1], )
 output_shape = y_train.shape[1]
@@ -92,11 +88,12 @@ final_model.compile(optimizer='adadelta',
 
 
 # Training Start
-history = final_model.fit(x_train, y_train,
-                    batch_size=batch_size,
-                    epochs=epochs,
-                    verbose=1,
-                    validation_data=(x_test, y_test))
+history = final_model.fit_generator(trainGenerator(),
+                    steps_per_epoch = 1000, 
+                    validation_data=testGenerator(),
+                    validation_steps = 1000,
+                    verbose=1
+                    )
 
 
 # Result
