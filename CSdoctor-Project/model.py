@@ -1,6 +1,7 @@
 # 3D-CNN + LSTM + Attention
 # Yonsei Univ. Computer Science. Team CSdoctor
 # Yu Ji-Sang, Yoo Tae-Kwon, Choi Seung-Yeon
+# Email : das135@naver.com, Choi Seung-Yeon
 
 
 import pandas as pd
