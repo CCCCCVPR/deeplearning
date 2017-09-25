@@ -49,24 +49,30 @@ output_shape = y_train.shape[1]
 # Model (3D-CNN + LSTM)
 # Model Start
 model = Sequential()
-model.add(Reshape(input_shape=input_shape, target_shape=(50, 10, 10, 10, 1)))
-
-# 3D-CNN
-model.add(TimeDistributed(Convolution3D(64, 3, 3, 3, border_mode='valid', activation='tanh')))
-model.add(TimeDistributed(Convolution3D(128, 3, 3, 3, border_mode='valid', activation='tanh')))
-model.add(TimeDistributed(Convolution3D(256, 3, 3, 3, border_mode='valid', activation='tanh')))
-model.add(TimeDistributed(Convolution3D(256, 3, 3, 3, border_mode='valid', activation='tanh')))
-model.add(TimeDistributed(MaxPooling3D(pool_size=(2, 2, 2))))
-model.add(TimeDistributed(Activation('tanh')))
-model.add(TimeDistributed(Dropout(0.25)))
-model.add(TimeDistributed(Flatten()))
+model.add(Reshape(input_shape=input_shape, target_shape=(50, 8, 8, 8, 1)))
 
 # Attention
 attention_model = Sequential()
 attention_model.add(model)
 attention_model.add((Activation('softmax', name='Attention_softmax')))
+middle_model = Sequential()
+middle_model.add(Merge([model, attention_model], mode='mul'))
+
+# 3D-CNN
+middle_model.add(TimeDistributed(Convolution3D(64, 3, 3, 3, border_mode='valid', activation='tanh')))
+middle_model.add(TimeDistributed(Convolution3D(128, 3, 3, 3, border_mode='valid', activation='tanh')))
+middle_model.add(TimeDistributed(Convolution3D(256, 3, 3, 3, border_mode='valid', activation='tanh')))
+middle_model.add(TimeDistributed(MaxPooling3D(pool_size=(2, 2, 2))))
+middle_model.add(TimeDistributed(Activation('tanh')))
+middle_model.add(TimeDistributed(Dropout(0.25)))
+middle_model.add(TimeDistributed(Flatten()))
+
+# Attention
+attention_model = Sequential()
+attention_model.add(middle_model)
+attention_model.add((Activation('softmax', name='Attention_softmax2')))
 final_model = Sequential()
-final_model.add(Merge([model, attention_model], mode='mul'))
+final_model.add(Merge([middle_model, attention_model], mode='mul'))
 
 # LSTM
 final_model.add(TimeDistributed(Dense(128)))
@@ -74,9 +80,9 @@ final_model.add(LSTM(50, return_sequences=False))
 final_model.add(Dense(output_shape))
 
 model.summary()
+middle_model.summary()
 attention_model.summary()
 final_model.summary()
-
 
 # Compile
 final_model.compile(optimizer='adadelta',
