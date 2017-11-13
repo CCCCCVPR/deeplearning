@@ -75,6 +75,7 @@ final_model.add(Merge([middle_model, attention_model], mode='mul'))
 final_model.add(TimeDistributed(Dense(128)))
 final_model.add(LSTM(50, return_sequences=False))
 final_model.add(Dense(output_shape))
+final_model.add(Activation('sigmoid'))
 
 model.summary()
 middle_model.summary()
